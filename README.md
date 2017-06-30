@@ -157,6 +157,10 @@ Material design themed tab bar. Can be used as both top and bottom tab bar.
 - `labelStyle` - style object for the tab item label
 - `style` - style object for the tab bar
 
+- `navBackgroundColor` - optional for change navigation bar background color (default is 'blue') `type string`
+- `activeColor` - optional for change the selected button color (default is 'yellow') `type string`
+- `inactiveColor` - optional for change the unselected button color (default is 'black') `type string`
+- `totalRoute` - Require for rendering button correctly. This will equal to number of your route. `type number`
 
 Check the [type definitions](src/TabViewTypeDefinitions.js) for details on shape of different objects.
 

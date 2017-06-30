@@ -344,14 +344,17 @@ export default class TabBar<T: Route<*>>
         outputRange: translateOutputRange,
       }),
       this.state.offset,
-    ).interpolate({
-      inputRange: [-maxDistance, 0],
-      outputRange: [-maxDistance, 0],
-      extrapolate: 'clamp',
-    });
+	    ).interpolate({
+	      inputRange: [-maxDistance, 0],
+	      outputRange: [-maxDistance, 0],
+	      extrapolate: 'clamp',
+	    });
 
+	// Props ADD - navBackgroundColor
     return (
-      <Animated.View style={[styles.tabBar, this.props.style]}>
+      <Animated.View style={[styles.tabBar, this.props.style, {
+		  backgroundColor: (this.props.navBackgroundColor? this.props.navBackgroundColor : 'blue')
+	  	}]}>
         <Animated.View
           pointerEvents="none"
           style={[
@@ -367,33 +370,18 @@ export default class TabBar<T: Route<*>>
           })}
         </Animated.View>
         <View style={styles.scroll}>
-          <ScrollView
-            horizontal
-            scrollEnabled={scrollEnabled}
-            bounces={false}
-            alwaysBounceHorizontal={false}
-            scrollsToTop={false}
-            showsHorizontalScrollIndicator={false}
-            automaticallyAdjustContentInsets={false}
-            overScrollMode="never"
-            contentContainerStyle={[
-              styles.tabContent,
-              scrollEnabled ? null : styles.container,
-            ]}
-            scrollEventThrottle={16}
-            onScroll={this._handleScroll}
-            onScrollBeginDrag={this._handleBeginDrag}
-            onScrollEndDrag={this._handleEndDrag}
-            onMomentumScrollBegin={this._handleMomentumScrollBegin}
-            onMomentumScrollEnd={this._handleMomentumScrollEnd}
-            contentOffset={this.state.initialOffset}
-            ref={this._setRef}
-          >
+          <View style={{
+			  	flexDirection: 'row',
+				alignItems: 'center',
+				justifyContent: 'center'
+		  	}}>
             {routes.map((route, i) => {
-              const focused = index === i;
+               const focused = index === i;
+			   //console.log('focused', focused);
               const outputRange = inputRange.map(
-                inputIndex => (inputIndex === i ? 1 : 0.7),
+                inputIndex => (inputIndex === i ? '1' : '0.2'),
               );
+			  //console.log('outputRange', outputRange);
               const opacity = Animated.multiply(
                 this.state.visibility,
                 position.interpolate({
@@ -416,7 +404,11 @@ export default class TabBar<T: Route<*>>
 
               const tabStyle = {};
 
-              tabStyle.opacity = opacity;
+			  ////////////////////////////////////////////////
+			  // EDIT //
+			  this.chooseColor(tabStyle, focused, this.props.activeColor, this.props.inactiveColor)
+			  // Props ADD - activeColor and inactiveColor
+			  ////////////////////////////////////////////////
 
               if (icon) {
                 if (label) {
@@ -460,43 +452,73 @@ export default class TabBar<T: Route<*>>
                   onPress={() => {
                     // eslint-disable-line react/jsx-no-bind
                     const { onTabPress, jumpToIndex } = this.props;
+					console.log('jump', jumpToIndex);
                     jumpToIndex(i);
                     if (onTabPress) {
                       onTabPress(scene);
                     }
                   }}
-                  style={tabContainerStyle}
+                  style={{
+					  paddingVertical: 10,
+				  }}
                 >
-                  <View style={styles.container}>
-                    <Animated.View
-                      style={[
-                        styles.tabItem,
-                        tabStyle,
-                        passedTabStyle,
-                        styles.container,
-                      ]}
-                    >
-                      {icon}
-                      {label}
-                    </Animated.View>
-                    {badge
-                      ? <Animated.View
-                          style={[
-                            styles.badge,
-                            { opacity: this.state.visibility },
-                          ]}
-                        >
-                          {badge}
-                        </Animated.View>
-                      : null}
-                  </View>
+				{ this.renderCustomItem(tabStyle, passedTabStyle, icon, label, badge, i) }
                 </TouchableItem>
               );
             })}
-          </ScrollView>
+          </View>
         </View>
       </Animated.View>
     );
+  }
+
+	chooseColor = (tabStyle, focused, color1, color2) => {
+		let c1 = (color1? color1 : 'yellow');
+		let c2 = (color2? color2 : 'black')
+		if(focused == true) {
+			tabStyle.backgroundColor = c1;
+		}
+		else {
+			tabStyle.backgroundColor = c2;
+		}
+	}
+
+  renderCustomItem = (tabStyle, passedTabStyle, icon, label, badge, index) => {
+	  let a = 0; let b = 0;
+	  let ROUTE = this.props.totalRoute;
+	  if(index == 0) { a = 1; }
+	  else if(index == (ROUTE-1)) { b = 1; }
+
+	  return (
+		  <View style={styles.container}>
+			<Animated.View
+			  style={[
+				styles.tabItem,
+				tabStyle,
+				passedTabStyle,
+				styles.container, {
+					borderTopLeftRadius: a*5,
+					borderBottomLeftRadius: a*5,
+					borderTopRightRadius: b*5,
+					borderBottomRightRadius: b*5
+				}
+			  ]}
+			>
+			  {icon}
+			  {label}
+			</Animated.View>
+			{badge
+			  ? <Animated.View
+				  style={[
+					styles.badge,
+					{ opacity: this.state.visibility },
+				  ]}
+				>
+				  {badge}
+				</Animated.View>
+			  : null}
+		  </View>
+	  )
   }
 }
 
@@ -508,7 +530,6 @@ const styles = StyleSheet.create({
     overflow: Platform.OS === 'web' ? 'auto' : 'scroll',
   },
   tabBar: {
-    backgroundColor: '#2196f3',
     elevation: 4,
     shadowColor: 'black',
     shadowOpacity: 0.1,
@@ -525,7 +546,6 @@ const styles = StyleSheet.create({
   tabLabel: {
     backgroundColor: 'transparent',
     color: 'white',
-    margin: 8,
   },
   tabItem: {
     flexGrow: 1,

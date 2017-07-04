@@ -452,7 +452,7 @@ export default class TabBar<T: Route<*>>
                   onPress={() => {
                     // eslint-disable-line react/jsx-no-bind
                     const { onTabPress, jumpToIndex } = this.props;
-					console.log('jump', jumpToIndex);
+					// console.log('jump', jumpToIndex);
                     jumpToIndex(i);
                     if (onTabPress) {
                       onTabPress(scene);
